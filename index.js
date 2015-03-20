@@ -4,8 +4,9 @@ var net = require('net');
 var eachAsync = require('each-async');
 var onetime = require('onetime');
 var roots = require('root-hints')('A');
+var async = require('async');
 
-var timeout = 1000;
+var timeout = 4000;
 var domains = [
 	'www.google.com',
 	'www.cloudflare.com',
@@ -13,7 +14,7 @@ var domains = [
 	'www.yandex.ru'
 ];
 
-module.exports = function (cb) {
+function check(cb) {
 	cb = onetime(cb);
 
 	// Pick a random root server to query
@@ -75,3 +76,11 @@ module.exports = function (cb) {
 
 	req.send();
 };
+
+
+module.exports = function(cb){
+	async.parallel([check,check],function(err,results){
+		if(!err) cb(null,(results[0] || results[1]))
+		else cb(err,null);
+	})
+}
