@@ -80,7 +80,15 @@ function check(cb) {
 
 module.exports = function(cb){
 	async.parallel([check,check],function(err,results){
-		if(!err) cb(null,(results[0] || results[1]))
-		else cb(err,null);
+		var status = false;
+		if(!err) {
+			status = results[0] || results[1];
+			if(!status) {
+				//On extremely high ping time servers, a thrid check is required
+				check(cb);
+			}
+			else cb(null,status);
+		}
+		else cb(err,status);
 	})
 }
